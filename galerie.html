@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kawaki Cam Galerie</title>
+
+<style>
+
+body{
+margin:0;
+padding:20px;
+background:#0f172a;
+font-family:Arial,sans-serif;
+color:white;
+}
+
+h1{
+text-align:center;
+color:#38bdf8;
+margin-bottom:20px;
+}
+
+.gallery{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:10px;
+}
+
+.gallery img{
+width:100%;
+border-radius:12px;
+border:3px solid #38bdf8;
+}
+
+</style>
+</head>
+
+<body>
+
+<h1>Kawaki Cam Galerie</h1>
+
+<div class="gallery" id="gallery"></div>
+
+<script type="module">
+
+import { createClient }
+from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+
+const supabaseUrl =
+'https://zssozoksokhducilosjx.supabase.co'
+
+const supabaseKey =
+'sb_publishable_yizSkGPTjQUsQBdflQDjzw_0lwhtyi4'
+
+const supabase =
+createClient(
+supabaseUrl,
+supabaseKey
+)
+
+const gallery =
+document.getElementById('gallery')
+
+async function loadPhotos(){
+
+gallery.innerHTML=''
+
+const { data,error } =
+await supabase
+.storage
+.from('photos')
+.list('',{
+limit:100
+})
+
+if(error){
+
+console.log(error)
+
+return
+
+}
+
+data.reverse()
+
+data.forEach(file=>{
+
+const img =
+document.createElement('img')
+
+img.src =
+`${supabaseUrl}/storage/v1/object/public/photos/${file.name}`
+
+gallery.appendChild(img)
+
+})
+
+}
+
+loadPhotos()
+
+</script>
+
+</body>
+</html>
